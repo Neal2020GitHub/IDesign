@@ -23,6 +23,13 @@ config_list_gpt4 = autogen.config_list_from_json(
     },
 )
 
+config_list_gpt4o = autogen.config_list_from_json(
+    "OAI_CONFIG_LIST.json",
+    filter_dict={
+        "model": ["gpt-4o-2024-08-06"],
+    },
+)
+
 gpt4_prev_config = {
     "cache_seed": 42,
     "temperature": 0.7,
@@ -39,11 +46,21 @@ gpt4_config = {
     "timeout": 600,
 }
 
+gpt4o_config = {
+    "cache_seed": 42,
+    "temperature": 0.7,
+    "top_p" : 1.0,
+    "config_list": config_list_gpt4o,
+    "timeout": 600,
+}
+
 gpt4_json_config = deepcopy(gpt4_prev_config)
+# gpt4_json_config = deepcopy(gpt4o_config)
 gpt4_json_config["temperature"] = 0.7
 gpt4_json_config["config_list"][0]["response_format"] = { "type": "json_object" }
 
 gpt4_json_engineer_config = deepcopy(gpt4_prev_config)
+# gpt4_json_engineer_config = deepcopy(gpt4o_config)
 gpt4_json_engineer_config["temperature"] = 0.0
 gpt4_json_engineer_config["config_list"][0]["response_format"] = { "type": "json_object" }
 
@@ -99,6 +116,7 @@ def create_agents(no_of_objects : int):
         name = "Json_schema_debugger",
         is_termination_msg = is_termination_msg,
     )
+    
     interior_designer = autogen.AssistantAgent(
         name = "Interior_designer",
         llm_config = gpt4_json_config,

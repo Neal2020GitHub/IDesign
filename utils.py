@@ -118,7 +118,7 @@ def preprocess_scene_graph(scene_graph):
     return scene_graph
 
 def build_graph(scene_graph):
-    G = nx.DiGraph()
+    G = nx.DiGraph()  # 有向图
     # Create graph
     for obj in scene_graph:
         if obj["new_object_id"] not in G.nodes():
@@ -760,7 +760,7 @@ def clean_and_extract_edges(relationships, parent_id, verbose):
 
     return binary_tree.edges(), flipped_edges
 
-def create_empty_image_with_boxes(image_size, boxes):
+def create_empty_image_with_boxes(image_size, boxes, output_dir=None):
     img = np.zeros((image_size[0], image_size[1], 3), dtype=np.uint8)
 
     for box in boxes:
@@ -773,10 +773,11 @@ def create_empty_image_with_boxes(image_size, boxes):
             x, y = int(x - w/2) , int(y - h/2)
             cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 2)
         cv2.putText(img, label, (x, y - 10), cv2.FONT_ITALIC , 0.5, (255, 255, 255), 1)
-    cv2.imshow("image", img) 
-    key = cv2.waitKey(0)
+    cv2.imwrite(f"{output_dir}/scene_graph.png", img)
+    # cv2.imshow("image", img) 
+    # key = cv2.waitKey(0)
 
-def get_visualization(scene_graph, room_priors=None):
+def get_visualization(scene_graph, room_priors=None, output_dir=None):
     visual_scene_graph = [
         (
             item["position"]["x"] + 2.0,
@@ -789,7 +790,7 @@ def get_visualization(scene_graph, room_priors=None):
         for item in scene_graph if "position" in item.keys()
     ]
     #TODO : Adjust visualization window size according to the room size
-    create_empty_image_with_boxes((800, 800), visual_scene_graph)
+    create_empty_image_with_boxes((800, 800), visual_scene_graph, output_dir)
 
 def calculate_overlap(box1, box2):
     if box1 is None or box2 is None:

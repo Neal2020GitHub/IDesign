@@ -1,4 +1,6 @@
-ag2==0.2.0
+--extra-index-url https://download.blender.org/pypi/
+
+ag2==0.3.2
 networkx==2.6.3
 jsonschema==4.3.2
 matplotlib
@@ -7,3 +9,8 @@ pydantic==1.10.2
 torch_redstone
 einops
 huggingface_hub
+bpy
+ninja
+pandas
+transformers
+objaverse

@@ -1,3 +1,6 @@
 __pycache__/
 .cache/
 OAI_CONFIG_LIST.json
+output/
+openshape-demo-support/
+OpenShape-Embeddings/

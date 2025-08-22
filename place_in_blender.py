@@ -1,4 +1,5 @@
 import bpy
+import mathutils
 import json
 import math
 import os
@@ -23,6 +24,7 @@ def create_room(width, depth, height):
     # Extrude to create walls
     bpy.ops.object.mode_set(mode='EDIT')
     bpy.ops.mesh.extrude_region_move(TRANSFORM_OT_translate={"value":(0, 0, height)})
+    # bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.mode_set(mode='OBJECT')
 
     # Scale the walls to the desired dimensions
@@ -86,19 +88,28 @@ def rescale_object(obj, scale):
         obj.scale = scale_factors
 
 
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--output_dir", type=str, required=True)
+args = parser.parse_args()
+output_dir = args.output_dir
+
+
 objects_in_room = {}
-file_path = "scene_graph.json"
+file_path = output_dir + "/scene_graph.json"
 with open(file_path, 'r') as file:
     data = json.load(file)
     for item in data:
         if item["new_object_id"] not in ["south_wall", "north_wall", "east_wall", "west_wall", "middle of the room", "ceiling"]:
             objects_in_room[item["new_object_id"]] = item
 
-directory_path = os.path.join(os.getcwd(), "Assets")
+# import ipdb; ipdb.set_trace()
+directory_path = os.path.join(output_dir, "Assets")
 glb_file_paths = find_glb_files(directory_path)
 
 for item_id, object_in_room in objects_in_room.items():
-    glb_file_path = os.path.join(directory_path, glb_file_paths[item_id])
+    # glb_file_path = os.path.join(directory_path, glb_file_paths[item_id])
+    glb_file_path = glb_file_paths[item_id]
     import_glb(glb_file_path, item_id)
 
 parents = get_highest_parent_objects()
@@ -145,3 +156,90 @@ delete_empty_objects()
 
 # TODO: Generate the room with the room dimensions
 create_room(4.0, 4.0, 2.5)
+
+
+
+
+# 渲染 top_down_view.png
+# 房间尺寸
+room_width, room_depth, room_height = 4.0, 4.0, 2.5  
+
+# 计算房间中心点
+center_x = room_width / 2.0
+center_y = room_depth / 2.0
+center_z = room_height
+
+# 创建光源（如果不存在）
+if "TopDownLight" not in bpy.data.objects:
+    bpy.ops.object.light_add(type='AREA', location=(center_x, center_y, center_z-0.1))
+    light = bpy.context.object
+    light.data.energy = 800  # 亮度，根据房间大小调整
+    light.data.size = 5       # 面积，越大光越柔和
+    light.name = "TopDownLight"
+
+# 创建相机（如果不存在）
+if "TopDownCamera" not in bpy.data.objects:
+    bpy.ops.object.camera_add(location=(center_x, center_y, center_z-0.1))
+    camera = bpy.context.object
+    camera.name = "TopDownCamera"
+else:
+    camera = bpy.data.objects["TopDownCamera"]
+    camera.location = (center_x, center_y, center_z-0.1)
+
+# 旋转相机朝下
+camera.rotation_euler = (0, 0, math.radians(-90))
+
+# FOV
+camera.data.lens = 5
+
+# 设置相机为活动相机
+bpy.context.scene.camera = camera
+
+# 设置渲染输出路径
+bpy.context.scene.render.filepath = os.path.join(output_dir, "top_down_view.png")
+
+# 渲染保存
+bpy.ops.render.render(write_still=True)
+
+
+
+# 渲染 corner_view.png
+# 相机目标点 = 房间中心
+target = (center_x, center_y, center_z / 2.0)  # 取房间中间偏下的位置
+
+# TODO: 相机位置 = 房间一个角落
+# corner_camera_location = (0.3, 0.3, center_z / 2.0)
+corner_camera_location = (room_width-0.3, room_depth-0.3, center_z / 2.0)
+
+# 创建相机（如果不存在）
+if "CornerCamera" not in bpy.data.objects:
+    bpy.ops.object.camera_add(location=corner_camera_location)
+    corner_camera = bpy.context.object
+    corner_camera.name = "CornerCamera"
+else:
+    corner_camera = bpy.data.objects["CornerCamera"]
+    corner_camera.location = corner_camera_location
+
+# 让相机朝向房间中心
+direction = (
+    target[0] - corner_camera.location.x,
+    target[1] - corner_camera.location.y,
+    target[2] - corner_camera.location.z,
+)
+rot_quat = mathutils.Vector(direction).to_track_quat('-Z', 'Y')
+corner_camera.rotation_euler = rot_quat.to_euler()
+
+# 设置相机参数
+corner_camera.data.lens = 10  # 增加焦距，避免画面太广
+bpy.context.scene.camera = corner_camera
+
+# 设置渲染输出路径
+bpy.context.scene.render.filepath = os.path.join(output_dir, "corner_view.png")
+
+# 渲染保存
+bpy.ops.render.render(write_still=True)
+
+
+
+# 保存一下，在blender里查看
+# bpy.ops.wm.save_as_mainfile(filepath=output_dir + "/scene.blend")

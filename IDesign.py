@@ -4,7 +4,7 @@ import re
 import networkx as nx
 
 from agents import create_agents
-from agents import is_termination_msg, gpt4_config
+from agents import is_termination_msg, gpt4_config, gpt4o_config
 from corrector_agents import get_corrector_agents
 from refiner_agents import get_refiner_agents
 
@@ -26,7 +26,7 @@ class IDesign:
 
     def create_initial_design(self):
         user_proxy, json_schema_debugger, interior_designer, interior_architect, engineer = create_agents(self.no_of_objects)
-        
+        # import ipdb; ipdb.set_trace()
         groupchat = GroupChat(
             agents=[user_proxy, interior_designer, interior_architect],
             messages=[],
@@ -39,6 +39,7 @@ class IDesign:
             max_round=15
         )
 
+        # 这一轮是 user / designer / architect 对话
         manager = GroupChatManager(groupchat=groupchat, llm_config=gpt4_config, is_termination_msg=is_termination_msg)
         user_proxy.initiate_chat(
             manager,
@@ -56,10 +57,11 @@ class IDesign:
             """,
         )
 
+        # import ipdb; ipdb.set_trace()
         designer_response = json.loads(groupchat.messages[-2]["content"])
         architect_response = json.loads(groupchat.messages[-1]["content"])
 
-        blocks_designer, blocks_architect = extract_list_from_json(designer_response), extract_list_from_json(architect_response)
+        blocks_designer, blocks_architect = extract_list_from_json(designer_response), extract_list_from_json(architect_response)  # 转成 list
         if len(blocks_designer) != len(blocks_architect):
             print("Lengths: ", len(blocks_designer), len(blocks_architect))
             raise ValueError("The number of blocks from the designer and architect should be the same! Please generate again.")
@@ -69,6 +71,7 @@ class IDesign:
         for d_block, a_block in zip(blocks_designer, blocks_architect):
             engineer.reset(), json_schema_debugger.reset()
             prompt = str(d_block) + "\n" + str(a_block)
+            # print(prompt)
 
             object_ids = [item["new_object_id"] for item in json_data["objects_in_room"]] if json_data is not None else []
 
@@ -98,13 +101,15 @@ class IDesign:
                 json_data = json.loads(chat_with_engineer.messages[-2]["content"])
             else:
                 json_data["objects_in_room"] += json.loads(chat_with_engineer.messages[-2]["content"])["objects_in_room"]
-            
+        
+        # import ipdb; ipdb.set_trace()
         self.scene_graph = json_data
 
     def correct_design(self, verbose=False, auto_prune=True):
         # Correct Spatial Conflicts
-        scene_graph = preprocess_scene_graph(self.scene_graph["objects_in_room"])
-        G = build_graph(scene_graph)
+        # import ipdb; ipdb.set_trace()
+        scene_graph = preprocess_scene_graph(self.scene_graph["objects_in_room"])  # 转成 list
+        G = build_graph(scene_graph)  # 构建有向图
         G = remove_unnecessary_edges(G)
         G, scene_graph = handle_under_prepositions(G, scene_graph)
 
@@ -307,7 +312,7 @@ class IDesign:
                 cluster_size = {"x_neg" : cluster_size["left of"], "x_pos" : cluster_size["right of"], "y_neg" : cluster_size["behind"], "y_pos" : cluster_size["in front"]}
                 node_obj["cluster"] = {"constraint_area" : cluster_size}
 
-    def backtrack(self, verbose=False):
+    def backtrack(self, output_dir, verbose=False):
         self.scene_graph = self.scene_graph["objects_in_room"] + self.room_priors
         prior_ids = ["south_wall", "north_wall", "east_wall", "west_wall", "ceiling", "middle of the room"]
         
@@ -337,11 +342,12 @@ class IDesign:
         depth_scene_graph = get_depth(scene_graph_wo_layout)
         max_depth = max(depth_scene_graph.values())
         
+        # import ipdb; ipdb.set_trace()
         if verbose:
             print("Max depth: ", max_depth)
             print("Depth scene graph: ", depth_scene_graph)
             print("Point BBox: ", [key for key, value in point_bbox.items() if value])
-            get_visualization(self.scene_graph, self.room_priors)
+            get_visualization(self.scene_graph, self.room_priors, output_dir)
             for obj in scene_graph_wo_layout:
                 if "position" in obj.keys():
                     print(obj["new_object_id"], obj["position"])
@@ -392,10 +398,11 @@ class IDesign:
                             
             if not error_flag:
                 d += 1
+                
         if verbose:
-            get_visualization(self.scene_graph, self.room_priors)
+            get_visualization(self.scene_graph, self.room_priors, output_dir)
     
-    def to_json(self, filename="scene_graph.json"):
+    def to_json(self, output_dir, filename="scene_graph.json"):
         # Save the scene graph to a json file
-        with open(filename, "w") as file:
+        with open(f"{output_dir}/{filename}", "w") as file:
             json.dump(self.scene_graph, file, indent=4)

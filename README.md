@@ -4,12 +4,12 @@ This is the official Github Repo for [*I-Design: Personalized LLM Interior Desig
 ## Requirements
 Install the requirements
 ```bash
-conda create -n idesign python=3.9
-conda activate idesign
+conda create -n i-design python=3.10
+conda activate i-design
+pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
-conda install pytorch==1.12.1 torchvision==0.13.1 torchaudio==0.12.1 cudatoolkit=11.3 -c pytorch
-pip install -U git+https://github.com/NVIDIA/MinkowskiEngine
-conda install -c dglteam/label/cu113 dgl
+pip install -U git+https://github.com/NVIDIA/MinkowskiEngine --no-deps
+conda install -c dglteam/label/th24_cu118 dgl
 ```
 Create the "OAI_CONFIG_LIST.json" file
 ```json
@@ -31,23 +31,8 @@ Create the "OAI_CONFIG_LIST.json" file
 ```
 ## Inference
 Create the scene graph and allocate coordinate positions
-```python
-from IDesign import IDesign
-
-i_design = IDesign(no_of_objects = 15, 
-                   user_input = "A creative livingroom", 
-                   room_dimensions = [4.0, 4.0, 2.5])
-
-# Interior Designer, Interior Architect and Engineer 
-i_design.create_initial_design()
-# Layout Corrector
-i_design.correct_design()
-# Layout Refiner
-i_design.refine_design()
-# Backtracking Algorithm
-i_design.create_object_clusters(verbose=False)
-i_design.backtrack(verbose=True)
-i_design.to_json()
+```bash
+python test.py
 ```
 
 Retrieve the 3D assets from Objaverse using OpenShape
@@ -55,11 +40,15 @@ Retrieve the 3D assets from Objaverse using OpenShape
 git clone https://huggingface.co/OpenShape/openshape-demo-support
 cd openshape-demo-support
 pip install -e .
-cd ..
-python retrieve.py
+```
+```bash
+python retrieve.py --output_dir output/20250821_094436
 ```
 
-Place the assets using the Blender Scripting Module using the script in the *place_in_blender.py* file
+Place the assets using the Blender Scripting Module
+```bash
+python place_in_blender.py --output_dir output/20250821_094436
+```
 
 ## Evaluation
 After creating scene renders in Blender, you can use the GPT-V evaluator to generate grades for evaluation. Fill in the necessary variables denoted with TODO and run the script

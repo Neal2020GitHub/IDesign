@@ -7,7 +7,7 @@ import argparse
 
 
 # TODO : OpenAI API Key
-api_key = "YOUR_API_KEY"
+api_key = ""
 
 # TODO : Path to your image
 image_path_1 = "FIRST_IMAGE_PATH.png"

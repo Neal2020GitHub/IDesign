@@ -10,6 +10,8 @@ import sys, os, shutil
 import objaverse
 from torch.nn import functional as F
 import re
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 #Print device
 print("Device: ", torch.cuda.get_device_name(0))
@@ -45,7 +47,7 @@ def load_openclip():
     clip_model, clip_prep = transformers.CLIPModel.from_pretrained(
         "laion/CLIP-ViT-bigG-14-laion2B-39B-b160k",
         low_cpu_mem_usage=True, torch_dtype=half,
-        offload_state_dict=True,
+        # offload_state_dict=True,
     ), transformers.CLIPProcessor.from_pretrained("laion/CLIP-ViT-bigG-14-laion2B-39B-b160k")
     if torch.cuda.is_available():
         with sys.clip_move_lock:
@@ -94,7 +96,14 @@ half = torch.float16 if torch.cuda.is_available() else torch.bfloat16
 clip_model, clip_prep = load_openclip()
 torch.set_grad_enabled(False)
 
-file_path = "scene_graph.json"
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("--output_dir", type=str, required=True)
+args = parser.parse_args()
+output_dir = args.output_dir
+
+file_path = output_dir + "/scene_graph.json"
 
 with open(file_path, "r") as file:
     objects_in_room = json.load(file)
@@ -117,7 +126,6 @@ for obj_in_room in objects_in_room:
         uids=[retrieved_obj['u']],
         download_processes=processes
     )
-    destination_folder = os.path.join(os.getcwd(), f"Assets/")
-    if not os.path.exists(destination_folder):
-        os.makedirs(destination_folder)
+    destination_folder = os.path.join(output_dir, f"Assets/")
+    os.makedirs(destination_folder, exist_ok=True)
     move_files(objaverse_objects, destination_folder, obj_in_room['new_object_id'])
