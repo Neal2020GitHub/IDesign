@@ -8,7 +8,10 @@ conda create -n i-design python=3.10
 conda activate i-design
 pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu118
 pip install -r requirements.txt
+
+sudo apt install build-essential python3-dev libopenblas-dev
 pip install -U git+https://github.com/NVIDIA/MinkowskiEngine --no-deps
+
 conda install -c dglteam/label/th24_cu118 dgl
 ```
 Install OpenShape
