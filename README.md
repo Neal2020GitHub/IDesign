@@ -1,5 +1,5 @@
 # IDesign
-This is the official Github Repo for [*I-Design: Personalized LLM Interior Designer*](https://atcelen.github.io/I-Design/)
+Modified from the official Github Repo for [*I-Design: Personalized LLM Interior Designer*](https://atcelen.github.io/I-Design/)
 
 ## Requirements
 Install the requirements
@@ -10,6 +10,12 @@ pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https
 pip install -r requirements.txt
 pip install -U git+https://github.com/NVIDIA/MinkowskiEngine --no-deps
 conda install -c dglteam/label/th24_cu118 dgl
+```
+Install OpenShape
+```bash
+git clone https://huggingface.co/OpenShape/openshape-demo-support
+cd openshape-demo-support
+pip install -e .
 ```
 Create the "OAI_CONFIG_LIST.json" file
 ```json
@@ -32,22 +38,17 @@ Create the "OAI_CONFIG_LIST.json" file
 ## Inference
 Create the scene graph and allocate coordinate positions
 ```bash
-python test.py
+python inference.py
 ```
 
 Retrieve the 3D assets from Objaverse using OpenShape
 ```bash
-git clone https://huggingface.co/OpenShape/openshape-demo-support
-cd openshape-demo-support
-pip install -e .
-```
-```bash
-python retrieve.py --output_dir output/20250821_094436
+python retrieve.py --output_dir $output_dir
 ```
 
 Place the assets using the Blender Scripting Module
 ```bash
-python place_in_blender.py --output_dir output/20250821_094436
+python place_in_blender.py --output_dir $output_dir
 ```
 
 ## Evaluation
