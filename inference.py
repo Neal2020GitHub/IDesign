@@ -8,7 +8,7 @@ os.makedirs(output_dir, exist_ok=True)
 
 
 # TODO: Change the prompt!
-prompt = "A modern livingroom"
+prompt = "A fancy bedroom"
 with open(f"{output_dir}/prompt.txt", "w") as f:
     f.write(prompt)
 
