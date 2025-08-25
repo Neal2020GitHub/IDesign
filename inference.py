@@ -3,20 +3,21 @@ import os
 import time
 
 
-output_dir = f"output/{time.strftime('%Y%m%d_%H%M%S')}"
+# TODO: Change the prompt!
+prompt = "A bedroom with a bed, two nightstands, and a wardrobe in the corner of the room."
+
+output_name = prompt.replace(" ", "_").replace("'", "").replace(",", "")[:30]
+output_dir = f"output/{output_name}_{time.strftime('%Y%m%d_%H%M%S')}"
 os.makedirs(output_dir, exist_ok=True)
 
-
-# TODO: Change the prompt!
-prompt = "A fancy bedroom"
 with open(f"{output_dir}/prompt.txt", "w") as f:
     f.write(prompt)
 
 
-# TODO: Change the number of objects and room dimensions!
-i_design = IDesign(no_of_objects = 10,  # 15
+# TODO: Change the number of objects and room shape!
+i_design = IDesign(no_of_objects = 15,  # 15
                    user_input = prompt, 
-                   room_dimensions = [4.0, 4.0, 2.5])
+                   room_dimensions = [6.0, 6.0, 2.5])  # [4.0, 4.0, 2.5]
 
 
 # import ipdb; ipdb.set_trace()

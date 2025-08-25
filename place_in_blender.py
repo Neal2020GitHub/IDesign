@@ -154,15 +154,15 @@ for OBJS in MSH_OBJS:
 bpy.ops.object.select_all(action='DESELECT')
 delete_empty_objects()
 
-# TODO: Generate the room with the room dimensions
-create_room(4.0, 4.0, 2.5)
+# TODO: Generate the room with the room shape
+create_room(6.0, 6.0, 2.5)  # 4.0, 4.0, 2.5
 
 
 
 
 # 渲染 top_down_view.png
-# 房间尺寸
-room_width, room_depth, room_height = 4.0, 4.0, 2.5  
+# TODO: Change the room shape
+room_width, room_depth, room_height = 6.0, 6.0, 2.5  # 4.0, 4.0, 2.5
 
 # 计算房间中心点
 center_x = room_width / 2.0
