@@ -155,14 +155,14 @@ bpy.ops.object.select_all(action='DESELECT')
 delete_empty_objects()
 
 # TODO: Generate the room with the room shape
-create_room(6.0, 6.0, 2.5)  # 4.0, 4.0, 2.5
+create_room(6.0, 6.0, 5)  # 4.0, 4.0, 2.5
 
 
 
 
 # 渲染 top_down_view.png
 # TODO: Change the room shape
-room_width, room_depth, room_height = 6.0, 6.0, 2.5  # 4.0, 4.0, 2.5
+room_width, room_depth, room_height = 6.0, 6.0, 5  # 4.0, 4.0, 2.5
 
 # 计算房间中心点
 center_x = room_width / 2.0
@@ -173,7 +173,7 @@ center_z = room_height
 if "TopDownLight" not in bpy.data.objects:
     bpy.ops.object.light_add(type='AREA', location=(center_x, center_y, center_z-0.1))
     light = bpy.context.object
-    light.data.energy = 800  # 亮度，根据房间大小调整
+    light.data.energy = 1000   # 亮度，根据房间大小调整
     light.data.size = 5       # 面积，越大光越柔和
     light.name = "TopDownLight"
 
@@ -190,13 +190,18 @@ else:
 camera.rotation_euler = (0, 0, math.radians(-90))
 
 # FOV
-camera.data.lens = 5
+camera.data.lens = 15
 
 # 设置相机为活动相机
 bpy.context.scene.camera = camera
 
 # 设置渲染输出路径
 bpy.context.scene.render.filepath = os.path.join(output_dir, "top_down_view.png")
+
+# 设置正方形分辨率
+bpy.context.scene.render.resolution_x = 1024
+bpy.context.scene.render.resolution_y = 1024
+bpy.context.scene.render.resolution_percentage = 100
 
 # 渲染保存
 bpy.ops.render.render(write_still=True)
@@ -205,11 +210,11 @@ bpy.ops.render.render(write_still=True)
 
 # 渲染 corner_view.png
 # 相机目标点 = 房间中心
-target = (center_x, center_y, center_z / 2.0)  # 取房间中间偏下的位置
+target = (center_x, center_y, 1.0)  # 取房间中间偏下的位置
 
 # TODO: 相机位置 = 房间一个角落
 # corner_camera_location = (0.3, 0.3, center_z / 2.0)
-corner_camera_location = (room_width-0.3, room_depth-0.3, center_z / 2.0)
+corner_camera_location = (room_width-0.1, room_depth-0.1, 1.0)
 
 # 创建相机（如果不存在）
 if "CornerCamera" not in bpy.data.objects:
@@ -230,7 +235,7 @@ rot_quat = mathutils.Vector(direction).to_track_quat('-Z', 'Y')
 corner_camera.rotation_euler = rot_quat.to_euler()
 
 # 设置相机参数
-corner_camera.data.lens = 10  # 增加焦距，避免画面太广
+corner_camera.data.lens = 15  # 增加焦距，避免画面太广
 bpy.context.scene.camera = corner_camera
 
 # 设置渲染输出路径

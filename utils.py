@@ -113,6 +113,7 @@ def preprocess_scene_graph(scene_graph):
                 if closest_id is not None:
                     elem["object_id"] = closest_id
                 else:
+                    import ipdb; ipdb.set_trace()
                     print(f"Object {elem['object_id']} not found in scene graph!")
                     raise ValueError("Object not found in scene graph!")
     return scene_graph

@@ -4,7 +4,7 @@ import time
 
 
 # TODO: Change the prompt!
-prompt = "A bedroom with a bed, two nightstands, and a wardrobe in the corner of the room."
+prompt = "A bedroom with a bed against the wall and at least one nightstand next to it, featuring a lamp on the nightstand. There is an office desk with a monitor on top and a sofa chair in front of it."
 
 output_name = prompt.replace(" ", "_").replace("'", "").replace(",", "")[:30]
 output_dir = f"output/{output_name}_{time.strftime('%Y%m%d_%H%M%S')}"
